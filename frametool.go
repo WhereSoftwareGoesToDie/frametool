@@ -44,12 +44,12 @@ func main() {
 	cmds["cat"] = CatCommand
 	cmdHelp["cat"] = "Write frames to stdout."
 
-	outputFormat := flag.String("output-fmt", "raw", "Encoding to use for writing frames. One of (raw).")
+	outputFormat := flag.String("output-fmt", "raw", "Encoding to use for writing frames. One of (raw,json).")
 	burstPacking := flag.Bool("output-burst", false, "Pack output as DataBursts instead of DataFrames.")
-	outputDest := flag.String("output", "", "Files to output to. If not specified, output is written to stdout.")
+	outputDest := flag.String("output", "", "Files to output to. If not specified, output is written to stdout. Multiple files can be specified separated by commas; one burst will be written to each file.")
 
 	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "Usage: %s <command> [options]\n\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "Usage: %s [options] <cmd>\n\n", os.Args[0])
 		fmt.Fprintf(os.Stderr, "Commands:\n\t")
 		for cmd, _ := range cmds {
 			fmt.Fprintf(os.Stderr, "%s: %s\n", cmd, cmdHelp[cmd])
@@ -75,9 +75,9 @@ func main() {
 	cmd := args[0]
 	if len(args) > 1 {
 		cfg.Input.Source = InputFile
+		cfg.Input.Files = args[1:]
 	} else {
 		cfg.Input.Source = InputStdin
-		cfg.Input.Files = args[1:]
 	}
 
 	var reader FrameReader
@@ -92,7 +92,6 @@ func main() {
 		Errorf("This can't happen.")
 		os.Exit(1)
 	}
-
 	var writer Writer
 	switch cfg.Output.Dest {
 	case OutputStdout:

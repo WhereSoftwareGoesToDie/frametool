@@ -12,6 +12,9 @@ func frameCat(cfg *Config, r FrameReader, w Writer) int {
 	case "raw":
 		e := new(RawFrameEncoder)
 		encoder = *e
+	case "json":
+		e := new(JsonFrameEncoder)
+		encoder = *e
 	default:
 		Errorf("Invalid output format %s.", cfg.Output.Format)
 	}

@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/anchor/bletchley/dataframe"
 	"os"
+	"encoding/json"
 )
 
 type FrameEncoder interface {
@@ -13,18 +14,29 @@ type BurstEncoder interface {
 	EncodeBurst(b *dataframe.DataBurst) ([]byte, error)
 }
 
-type RawFrameEncoder struct {
-}
+type RawFrameEncoder struct {}
 
 func (e RawFrameEncoder) EncodeFrame(f *dataframe.DataFrame) ([]byte, error) {
 	return dataframe.MarshalDataFrame(f)
 }
 
-type RawBurstEncoder struct {
+type JsonFrameEncoder struct {}
+
+func (e JsonFrameEncoder) EncodeFrame(f *dataframe.DataFrame) ([]byte, error) {
+	//jf := f.ToJSON()
+	return json.Marshal(f)
 }
 
-func (e RawBurstEncoder) EncodeFrame(b *dataframe.DataBurst) ([]byte, error) {
+type RawBurstEncoder struct {}
+
+func (e RawBurstEncoder) EncodeBurst(b *dataframe.DataBurst) ([]byte, error) {
 	return dataframe.MarshalDataBurst(b)
+}
+
+type JsonBurstEncoder struct {}
+
+func (e JsonBurstEncoder) EncodeBurst(b *dataframe.DataBurst) ([]byte, error) {
+	return json.Marshal(b)
 }
 
 type Writer interface {
