@@ -30,11 +30,14 @@ type Config struct {
 		Format string
 		Packing OutputPacking
 		Dest OutputDest
-		Files []string
+		File string
 	}
 	Input struct {
 		Source InputSource
 		Files []string
+	}
+	Gen struct {
+		Count uint
 	}
 }
 
@@ -43,10 +46,12 @@ func main() {
 	cmdHelp := make(map[string]string, 0)
 	cmds["cat"] = CatCommand
 	cmdHelp["cat"] = "Write frames to stdout."
+	cmds["gen"] = GenCommand
+	cmdHelp["gen"] = "Generate random frames for testing."
 
 	outputFormat := flag.String("output-fmt", "raw", "Encoding to use for writing frames. One of (raw,json).")
 	burstPacking := flag.Bool("output-burst", false, "Pack output as DataBursts instead of DataFrames.")
-	outputDest := flag.String("output", "", "Files to output to. If not specified, output is written to stdout. Multiple files can be specified separated by commas; one burst will be written to each file.")
+	outputDest := flag.String("output", "", "File to output to. If not specified, output is written to stdout.")
 
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage: %s [options] <cmd>\n\n", os.Args[0])
@@ -66,6 +71,8 @@ func main() {
 	}
 	if *outputDest == "" {
 		cfg.Output.Dest = OutputStdout
+	} else {
+		cfg.Output.File = *outputDest
 	}
 	if flag.NArg() < 1 {
 		flag.Usage()
