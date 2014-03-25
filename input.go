@@ -5,7 +5,7 @@ import (
 	"io"
 	"io/ioutil"
 
-	"github.com/anchor/bletchley/dataframe"
+	"github.com/anchor/dataframe"
 )
 
 type FrameReader interface {

@@ -3,7 +3,7 @@ package main
 import (
 	"io"
 
-	"github.com/anchor/bletchley/dataframe"
+	"github.com/anchor/dataframe"
 )
 
 func frameCat(cfg *Config, r FrameReader, w Writer) int {

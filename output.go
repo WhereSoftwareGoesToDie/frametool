@@ -1,9 +1,10 @@
 package main
 
 import (
-	"github.com/anchor/bletchley/dataframe"
 	"os"
 	"encoding/json"
+
+	"github.com/anchor/dataframe"
 )
 
 type FrameEncoder interface {
