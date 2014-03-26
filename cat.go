@@ -20,7 +20,7 @@ func frameCat(cfg *Config, r FrameReader, w Writer) int {
 	}
 	var f *dataframe.DataFrame
 	var err error
-	for f, err = r.NextFrame(); err == nil ; {
+	for f, err = r.NextFrame(); err == nil ; f, err = r.NextFrame() {
 		b, err := encoder.EncodeFrame(f)
 		if err != nil {
 			Errorf("Error encoding frame: %v", err)
@@ -38,6 +38,26 @@ func frameCat(cfg *Config, r FrameReader, w Writer) int {
 }
 
 func burstCat(cfg *Config, r FrameReader, w Writer) int {
+	var encoder BurstEncoder
+	switch cfg.Output.Format {
+	case "raw":
+		e := new(RawBurstEncoder)
+		encoder = *e
+	}
+	fs := make([]*dataframe.DataFrame, 0)
+	var f *dataframe.DataFrame
+	var err error
+	for f, err = r.NextFrame(); err == nil ; f, err = r.NextFrame() {
+		fs = append(fs, f)
+	}
+	if err != io.EOF {
+		Errorf("Error reading next frame: %v", err)
+	}
+	b, err := encoder.EncodeBurst(dataframe.BuildDataBurst(fs))
+	if err != nil {
+		Errorf("Error marshalling databurst: %v", err)
+	}
+	w.Write(b)
 	return 0
 }
 

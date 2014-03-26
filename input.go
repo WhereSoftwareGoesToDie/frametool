@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"io"
+	"fmt"
 	"io/ioutil"
 
 	"github.com/anchor/dataframe"
@@ -15,21 +16,25 @@ type FrameReader interface {
 // StdinReader reads DataFrames from stdin.
 // We assume only one burst will be provided on stdin, as bursts
 // themselves are the only framing method we use. 
-type StreamBurstReader struct {
+type StreamBurstReaderState struct {
 	frames []*dataframe.DataFrame
-	stream *os.File
 	burstRead bool
 	counter int
 }
 
+type StreamBurstReader struct {
+	state *StreamBurstReaderState
+	stream *os.File
+}
+
 func NewStreamBurstReader(stream *os.File) *StreamBurstReader {
-	r := new(StreamBurstReader)
-	r.stream = stream
-	return r
+	s := new(StreamBurstReaderState)
+	r := StreamBurstReader{s, stream}
+	return &r
 }
 
 
-func (r *StreamBurstReader) readBurst() error {
+func (r StreamBurstReader) readBurst() error {
 	b, err := ioutil.ReadAll(r.stream)
 	if err != nil {
 		return err
@@ -38,22 +43,23 @@ func (r *StreamBurstReader) readBurst() error {
 	if err != nil {
 		return err
 	}
-	r.frames = burst.Frames
+	r.state.frames = burst.Frames
 	return nil
 }
 
 func (r StreamBurstReader) NextFrame() (*dataframe.DataFrame, error) {
-	if !r.burstRead {
+	if !r.state.burstRead {
 		err := r.readBurst()
+		r.state.burstRead = true
 		if err != nil {
 			return nil, err
 		}
 	}
-	if len(r.frames) <= r.counter {
+	if len(r.state.frames) <= r.state.counter {
 		return nil, io.EOF
 	}
-	f := r.frames[r.counter]
-	r.counter++
+	f := r.state.frames[r.state.counter]
+	r.state.counter++
 	return f, nil
 }
 
