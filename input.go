@@ -62,24 +62,28 @@ func (r StreamBurstReader) NextFrame() (*dataframe.DataFrame, error) {
 	return f, nil
 }
 
-type FileReader struct {
-	paths []string
+type FileReaderState struct {
 	pathCounter int
 	streamReader *StreamBurstReader
 }
 
+type FileReader struct {
+	paths []string
+	state *FileReaderState
+}
+
 func NewFileReader(paths []string) *FileReader {
-	r := new(FileReader)
-	r.paths = paths
-	return r
+	s := new(FileReaderState)
+	r := FileReader{paths, s}
+	return &r
 }
 
 func (r *FileReader) nextPath() (string, error) {
-	if len(r.paths) <= r.pathCounter {
+	if len(r.paths) <= r.state.pathCounter {
 		return "", io.EOF
 	}
-	p := r.paths[r.pathCounter]
-	r.pathCounter++
+	p := r.paths[r.state.pathCounter]
+	r.state.pathCounter++
 	return p, nil
 }
 
@@ -93,24 +97,24 @@ func (r *FileReader) nextStream() error {
 		return err
 	}
 	sr := NewStreamBurstReader(f)
-	r.streamReader = sr
+	r.state.streamReader = sr
 	return nil
 }
 
 func (r FileReader) NextFrame() (*dataframe.DataFrame, error) {
-	if r.streamReader == nil {
+	if r.state.streamReader == nil {
 		err := r.nextStream()
 		if err != nil {
 			return nil, err
 		}
 	}
-	f, err := r.streamReader.NextFrame()
+	f, err := r.state.streamReader.NextFrame()
 	if err == io.EOF {
 		err := r.nextStream()
 		if err != nil {
 			return nil, err
 		}
-		f, err = r.streamReader.NextFrame()
+		f, err = r.state.streamReader.NextFrame()
 	}
 	return f, err
 }
