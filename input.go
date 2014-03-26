@@ -3,7 +3,6 @@ package main
 import (
 	"os"
 	"io"
-	"fmt"
 	"io/ioutil"
 
 	"github.com/anchor/dataframe"
