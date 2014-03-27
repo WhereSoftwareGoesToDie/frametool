@@ -24,7 +24,6 @@ func (e RawFrameEncoder) EncodeFrame(f *dataframe.DataFrame) ([]byte, error) {
 type JsonFrameEncoder struct {}
 
 func (e JsonFrameEncoder) EncodeFrame(f *dataframe.DataFrame) ([]byte, error) {
-	//jf := f.ToJSON()
 	return json.Marshal(f)
 }
 
